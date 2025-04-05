@@ -153,8 +153,14 @@ const ProductList = () => {
                     />
                   </Link>
                 </TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>{product.name}</TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>{product.sku}</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>
+                <Link to={`/details/${product.id}`} style={{ textDecoration: 'none' }}>
+                {product.name}
+                </Link></TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>
+                <Link to={`/details/${product.id}`} style={{ textDecoration: 'none' }}>
+                {product.sku}
+                </Link></TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>{product.brand_name || 'N/A'}</TableCell>
                 {/* <TableCell sx={{ textAlign: 'center' }}>{product.quantity || 0}</TableCell> */}
                 <TableCell sx={{ textAlign: 'center' }}>${product.price}</TableCell>
@@ -189,6 +195,7 @@ const ProductList = () => {
               <Link
                 to={`/details/${product.id}`}
                 style={{
+                 
                   textDecoration: 'none',
                   display: 'flex',
                   flexDirection: 'column',
@@ -211,6 +218,7 @@ const ProductList = () => {
                   <Typography
                     variant="h6"
                     sx={{
+                      color:'black',
                         fontSize:'15px',
                       fontWeight: 'bold',
                       height: '3rem',
@@ -222,7 +230,7 @@ const ProductList = () => {
                   <Typography
                     variant="body2"
                     color="textSecondary"
-                    sx={{ height: '2rem', overflow: 'hidden' }}
+                    sx={{ height: '2rem', color:'black', overflow: 'hidden' }}
                   >
                     SKU: {product.sku}
                   </Typography>
