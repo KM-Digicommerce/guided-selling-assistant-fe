@@ -160,6 +160,9 @@ const handleCategoryChange = (event) => {
         }
     }, [selectedCategoryId]);
 
+    useEffect(() => {
+        fetchProducts('');
+    }, []);
     const fetchProducts = (selectedCategoryId) => {
         setLoading(true); // Start loading
         fetch('https://guided-selling-assistant.onrender.com/productList/', {
