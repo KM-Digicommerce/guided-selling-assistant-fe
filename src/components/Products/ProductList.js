@@ -368,7 +368,7 @@ const handleCategoryChange = (event) => {
 
 <Paper sx={{ width: '100%', overflow: 'hidden' }}>
   {viewMode === 'list' ? (
-    <TableContainer sx={{ maxHeight: 600 }}>
+    <TableContainer sx={{ maxHeight: 750 }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
