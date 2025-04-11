@@ -368,7 +368,10 @@ const handleCategoryChange = (event) => {
 
 <Paper sx={{ width: '100%', overflow: 'hidden' }}>
   {viewMode === 'list' ? (
-    <TableContainer sx={{ maxHeight: 600 }}>
+    <TableContainer   sx={{
+      height: 'calc(100vh - 250px)', // Adjust 250px based on your layout (header + filters + padding)
+      overflowY: 'auto',
+    }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
