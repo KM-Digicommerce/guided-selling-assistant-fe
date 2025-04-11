@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useMediaQuery, useTheme } from '@mui/material';
+
 import {
     Container,
     Typography,
@@ -37,6 +39,7 @@ import { ListAlt as ListAltIcon, GridView as GridViewIcon } from '@mui/icons-mat
 import DotLoading from '../Loading/DotLoading';
 
 const ProductList = () => {
+  
     const [products, setProducts] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +51,9 @@ const ProductList = () => {
     const [allProducts, setAllProducts] = useState([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success' or 'error'
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [productsPerPage] = useState(5);
@@ -62,6 +68,15 @@ const ProductList = () => {
   
     const [categoryFilters, setCategoryFilters] = useState([]);
 // const selectedCategory = categoryOptions.find(cat => cat.id === selectedCategoryId);
+const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+const [maximized, setMaximized] = useState(true);
+const [dialogSize, setDialogSize] = useState({ width: 400, height: 450 }); // Initial size
+
+const toggleDialogSize = () => {
+    setMaximized(prev => !prev);
+};
 
     // Get the sort symbol for each column
     const getSortSymbol = (column) => {
@@ -126,9 +141,13 @@ const handleCategoryChange = (event) => {
     const selectedCategory = categoryOptions.find(cat => cat.id === categoryId);
     setSelectedCategoryName(selectedCategory ? selectedCategory.name : '');
 
-    // Fetch the filters for the selected category
+   
     if (categoryId) {
-        fetchFilters(categoryId);
+      fetchFilters(categoryId);
+      setSnackbarMessage('Category selected successfully!');
+      setSnackbarSeverity('success'); // green
+      setSnackbarOpen(true);
+    
     }
 };
 
@@ -155,6 +174,10 @@ const handleCategoryChange = (event) => {
         setCategoryFilters([]);
         setCategoryOptions([]);
         fetchCategories()
+        setSnackbarMessage('Reset successfully!');
+        setSnackbarSeverity('error'); // red
+        setSnackbarOpen(true);
+        fetchProducts()
     };
 
     useEffect(() => {
@@ -170,31 +193,36 @@ const handleCategoryChange = (event) => {
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [searchQuery]);
     const fetchProducts = () => {
-        setLoading(true); // Start loading
-        fetch('https://guided-selling-assistant.onrender.com/productList/', {
-            method: 'POST', // Assuming the method is POST
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              ...(selectedCategoryId && { category_id: selectedCategoryId }),
-                search_query : ''
-                // collection_name: selectedCategoryName,
-            }),
-        })
-            .then(response => response.json())
-            .then(responseData => {
-                setProducts(responseData.data?.products || []);
-                setLoading(false); // Stop loading after data is fetched
-            })
-            .catch(error => {
-                console.error('Error fetching product data:', error);
-                setLoading(false); // Stop loading even if there's an error
-            });
+      setLoading(true);
+      const transformedFilters = {
+        ...(Object.keys(selectedFilters).length > 0 && { attributes: selectedFilters ? selectedFilters :'' }),
     };
-
+      fetch('https://guided-selling-assistant.onrender.com/productList/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              ...(selectedCategoryId && { category_id: selectedCategoryId }),
+              search_query: searchQuery || '',
+              ...transformedFilters
+          }),
+      })
+          .then(response => response.json())
+          .then(responseData => {
+              const productList = responseData.data?.products || [];
+              setProducts(productList);
+              setFilteredProducts(productList);
+              setLoading(false);
+          })
+          .catch(error => {
+              console.error('Error fetching product data:', error);
+              setLoading(false);
+          });
+  };
+  
     // Effect to fetch products when categoryId or filters change
     useEffect(() => {
         if (selectedCategoryId && Object.keys(selectedFilters).length > 0) {
@@ -202,21 +230,6 @@ const handleCategoryChange = (event) => {
         }
     }, [selectedCategoryId, selectedFilters]); // Depend on selectedCategoryId and selectedFilters
 
-    useEffect(() => {
-        if (searchQuery) {
-            const filtered = products.filter(product =>
-                product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.brand_name.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            setFilteredProducts(filtered);
-            setNoDataFound(filtered.length === 0); // Set No Data Found if no products match search query
-        } else {
-            setFilteredProducts(products);
-            setNoDataFound(products.length === 0); // Set No Data Found if no products available
-        }
-    }, [searchQuery, products]);
 
     // Sorting function
     const sortProducts = (key) => {
@@ -248,9 +261,9 @@ const handleCategoryChange = (event) => {
 
     const handleSearchChange = (event) => {
 
-      // if(searchQuery){
-      //   fetchProducts()
-      // }
+      if(searchQuery){
+        fetchProducts()
+      }
         setSearchQuery(event.target.value);
         setPage(0);
     };
@@ -263,10 +276,9 @@ const handleCategoryChange = (event) => {
       setSortConfig({ key: 'sku', direction: 'asc' });
     
       // ✅ Clear category and refetch full list
-    if(selectedCategoryId){
-      fetchProducts()
-      // fetchCategories()
-    }
+      setSnackbarMessage('Reset successfully!');
+      setSnackbarSeverity('error'); // red
+      setSnackbarOpen(true);
       // fetchProducts('');
   
     
@@ -279,17 +291,7 @@ const handleCategoryChange = (event) => {
         setViewMode(mode);
     };
 
-    // if (loading) {
-    //     return (
-    //         <Container maxWidth="lg">
-    //             <Typography variant="h4" sx={{ fontSize: '18px' }} gutterBottom>
-    //                 Products
-    //             </Typography>
-    //             {/* <div style={{marginTop:'10%'}}><DotLoading/></div> */}
-    //         </Container>
-    //     );
-    // }
-
+   
     return (
         <Container  maxWidth={false} sx={{ maxWidth: '100% !important', width: '100%' }}>
           
@@ -481,77 +483,130 @@ const handleCategoryChange = (event) => {
         </Grid>
       ) : (
         <Grid container spacing={2} justifyContent="center">
-          {filteredProducts
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            .map((product) => (
-              <Grid item xs={12} sm={12} md={4} sx={{ padding: '30px' }} key={product.id} display="flex" justifyContent="center">
-                <Card
-                  sx={{
-                    marginTop: '10px',
-                    width: '300px',
-                    height: '100%',
+        {filteredProducts
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map((product) => (
+            <Grid
+              item
+              xs={12} sm={2.4} md={2.4} lg={2.4}  // Adjust grid item to fit 5 cards in a row (20% each)
+              sx={{ padding: '10px' }}
+              key={product.id}
+              display="flex"
+              justifyContent="center"
+            >
+              <Card
+                sx={{
+                  marginTop: '10px',
+                  width: '250px',
+                  height: '300px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: '10px',
+                  border: '1px solid #ddd',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.3s, box-shadow 0.3s',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+                  },
+                }}
+              >
+                <Link
+                  to={`/details/${product.id}`}
+                  style={{
+                    textDecoration: 'none',
                     display: 'flex',
                     flexDirection: 'column',
-                    borderRadius: '10px',
-                    border: '1px solid #ddd',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
-                    },
+                    height: '100%',
                   }}
                 >
-                  <Link
-                    to={`/details/${product.id}`}
-                    style={{
-                      textDecoration: 'none',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
+                  <CardMedia
+                    component="img"
+                    height="100"
+                    width="200"
+                    image={product.image_url}
+                    alt={product.name}
+                    sx={{
+                      objectFit: 'contain',
+                      borderTopLeftRadius: '10px',
+                      borderTopRightRadius: '10px',
                     }}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="130"
-                      width="200"
-                      image={product.image_url}
-                      alt={product.name}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                  <Tooltip title={product.name} arrow>
+  <Typography
+    variant="h6"
+    sx={{
+      color: 'black',
+      fontSize: '15px',
+      fontWeight: 'bold',
+      height: '3rem',  // Restrict height to show only 2 lines
+      overflow: 'hidden',
+      display: '-webkit-box',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: 2,  // Limit to two lines
+      transition: 'all 0.3s ease',  // Transition for smooth effect
+    }}
+  >
+    {product.name}
+  </Typography>
+</Tooltip>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
                       sx={{
-                        objectFit: 'contain',
-                        borderTopLeftRadius: '10px',
-                        borderTopRightRadius: '10px',
+                        // height: '2rem',
+                        color: 'black',
+                        overflow: 'hidden',
                       }}
-                    />
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: 'black',
-                          fontSize: '15px',
-                          fontWeight: 'bold',
-                          height: '3rem',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {product.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="textSecondary"
-                        sx={{ height: '2rem', color: 'black', overflow: 'hidden' }}
-                      >
-                        SKU: {product.sku}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        Price: ${product.price}
-                      </Typography>
-                    </CardContent>
-                  </Link>
-                </Card>
-              </Grid>
-            ))}
-        </Grid>
+                    >
+                      SKU: {product.sku}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                      
+                        color: 'black',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      MPN: {product.mpn}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        // height: '2rem',
+                        color: 'black',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      Category: {product.category}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        // height: '2rem',
+                        color: 'black',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      Brand: {product.brand_name}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Price: ${product.price}
+                    </Typography>
+                  </CardContent>
+                </Link>
+              </Card>
+            </Grid>
+          ))}
+      </Grid>
+      
+      
+      
       )}
     </Grid>
   )}
@@ -601,7 +656,12 @@ const handleCategoryChange = (event) => {
                     fontSize: '24px',
                     zIndex: 9999
                 }}
-                onClick={() => setShowPopup(true)}
+                onClick={() => {
+                  setShowPopup(true);        // show popup
+                  setSearchQuery('');        // clear search input
+                  fetchProducts();           // fetch with cleared search
+                  setPage(0);                // reset pagination
+              }}
             >
                 ❓
             </Button>
@@ -610,7 +670,7 @@ const handleCategoryChange = (event) => {
 
 
 
-            <Dialog
+            {/* <Dialog
   open={showPopup}
   onClose={() => setShowPopup(false)}
   maxWidth="xs"
@@ -622,7 +682,7 @@ const handleCategoryChange = (event) => {
       marginTop:'30px',
       bottom: '80px', // adjust to appear above the ❓ button
       right: '20px',
-      height:'700px',
+      height:'450px',
       margin: 0,
       borderRadius: '12px',
       zIndex: 1300
@@ -697,7 +757,189 @@ const handleCategoryChange = (event) => {
                         Close
                     </Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog> */}
+
+
+<Dialog
+    open={showPopup}
+    onClose={() => setShowPopup(false)}
+    maxWidth={false}
+    fullWidth={false}
+    hideBackdrop={false}
+    PaperProps={{
+        style: {
+            position: 'fixed',
+            bottom: '80px',
+            right: '20px',
+            margin: 0,
+            zIndex: 1300,
+            borderRadius: '12px',
+            width: isMobile ? '95%' : maximized ? dialogSize.width : 250,
+            height: isMobile ? '85%' : maximized ? dialogSize.height : 60,
+            transition: 'all 0.3s ease',
+            overflow: 'hidden',
+        },
+    }}
+>
+<DialogTitle
+    style={{
+        textAlign: 'center',
+        fontWeight: 'bold',
+        color: '#7B61FF',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingRight: '40px',
+    }}
+>
+    {maximized ? 'Product Finder' : 'PF'}
+
+    <Box
+    sx={{
+        position: 'absolute',
+        right: 10,
+        top: 10,
+        display: 'flex',
+        gap: '4px',
+        alignItems: 'center',
+    }}
+>
+    {/* Minimize Button */}
+    <Tooltip title="Minimize">
+        <span>
+            <Button
+                size="small"
+                onClick={() => maximized && toggleDialogSize()}
+                disabled={!maximized}
+                sx={{
+                    minWidth: '32px',
+                    height: '32px',
+                    marginTop:'-1px',
+                    padding: '4px',
+                    lineHeight: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                🗕
+            </Button>
+        </span>
+    </Tooltip>
+
+    {/* Maximize Button */}
+    <Tooltip title="Maximize">
+        <span>
+            <Button
+                size="small"
+                onClick={() => !maximized && toggleDialogSize()}
+                disabled={maximized}
+                sx={{
+                    minWidth: '32px',
+                    height: '32px',
+                    marginTop:'10px',
+                    marginTop:'5px',
+                    padding: '4px',
+                    lineHeight: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                🗖
+            </Button>
+        </span>
+    </Tooltip>
+
+    {/* Close Button */}
+    <Tooltip title="Close">
+        <Button
+            onClick={() => setShowPopup(false)}
+            size="small"
+            sx={{
+                minWidth: '32px',
+                height: '32px',
+                padding: '4px',
+                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+        >
+            <CloseIcon fontSize="small" />
+        </Button>
+    </Tooltip>
+</Box>
+
+</DialogTitle>
+
+    {maximized && (
+        <>
+            <DialogContent dividers>
+                <FormControl fullWidth margin="normal">
+                    <InputLabel>Category</InputLabel>
+                    <Select
+                        value={selectedCategoryId}
+                        label="Category"
+                        onChange={handleCategoryChange}
+                    >
+                        {categoryOptions.map((category) => (
+                            <MenuItem sx={{fontSize:'14px'}} key={category.id} value={category.id}>
+                                {category.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                {categoryFilters.map((filter, index) => (
+                    <Accordion key={index}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#cfd3df' }}>
+                            <Typography variant="subtitle1" sx={{fontSize:'14px'}}>{filter.name}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+  {filter.options.map((option, optionIndex) => (
+    <FormControlLabel
+      key={optionIndex}
+      control={
+        <Checkbox 
+          checked={selectedFilters[filter.name]?.includes(option.label) || false}
+          onChange={() => handleFilterChange(filter.name, option.label)}
+        />
+      }
+      label={option.label}
+      sx={{
+        '& .MuiFormControlLabel-label': {
+          fontSize: '14px',
+        },
+      }}
+    />
+  ))}
+</AccordionDetails>
+
+                    </Accordion>
+                ))}
+
+                <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                    <Button
+                        variant="text"
+                        color="error"
+                        onClick={handleClearFilters}
+                        style={{ fontWeight: 'bold' }}
+                    >
+                        ❌ Reset All
+                    </Button>
+                </div>
+            </DialogContent>
+
+            <DialogActions>
+                <Button onClick={() => setShowPopup(false)} color="primary">
+                    Close
+                </Button>
+            </DialogActions>
+        </>
+    )}
+</Dialog>
+
 
 
             <Snackbar
@@ -708,6 +950,25 @@ const handleCategoryChange = (event) => {
 >
   <Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: '100%' }}>
      cleared successfully!
+  </Alert>
+</Snackbar>
+
+
+
+<Snackbar
+  open={snackbarOpen}
+  autoHideDuration={3000}
+  onClose={() => setSnackbarOpen(false)}
+  anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // 👈 top-right
+>
+  <Alert
+    onClose={() => setSnackbarOpen(false)}
+    severity={snackbarSeverity} // success or error dynamically
+    sx={{ width: '100%' }}
+    elevation={6}
+    variant="filled"
+  >
+    {snackbarMessage}
   </Alert>
 </Snackbar>
 
