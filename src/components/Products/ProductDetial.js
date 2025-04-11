@@ -986,7 +986,7 @@ setSnackbarOpen(true);
       
    
 
-<Box sx={{ display: "flex",marginLeft: '-30px', alignItems: "center", padding: "20px" }}>
+<Box sx={{ display: "flex",marginLeft: '-30px', alignItems: "center", padding: "35px" }}>
               <IconButton sx={{ marginLeft: "-3%" }} onClick={handleBackClick}>
                 <ArrowBack />
               </IconButton>
