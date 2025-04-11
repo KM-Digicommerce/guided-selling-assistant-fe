@@ -74,6 +74,10 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 const [maximized, setMaximized] = useState(true);
 const [dialogSize, setDialogSize] = useState({ width: 400, height: 450 }); // Initial size
 
+
+// Assume 'data' is the response from your API
+
+
 const toggleDialogSize = () => {
     setMaximized(prev => !prev);
 };
@@ -112,16 +116,30 @@ const toggleDialogSize = () => {
     })
     .then(response => response.json())
     .then(data => {
+        // const filters = data.data.filters;
+        // const filtersWithCheckbox = filters.map(filter => {
+        //     return {
+        //         ...filter,
+        //         options: filter.config.options.map(option => ({
+        //             label: option.trim(),
+        //             checked: false,
+        //         }))
+        //     };
+        // });
+
         const filters = data.data.filters;
-        const filtersWithCheckbox = filters.map(filter => {
-            return {
-                ...filter,
-                options: filter.config.options.map(option => ({
-                    label: option.trim(),
-                    checked: false,
-                }))
-            };
-        });
+console.log('oppo',filters)
+const filtersWithCheckbox = filters.map((filter) => ({
+  ...filter,
+  options: filter.config.options.map((option) => ({
+    label: option.toString().trim(),
+    checked: false,
+  })),
+}));
+
+// Now set this to your state to render in the Accordion
+setCategoryFilters(filtersWithCheckbox);
+        console.log('lllllll',filters,   filtersWithCheckbox)
         setCategoryFilters(filtersWithCheckbox);
         setLoading(false); // Stop loading after filters are fetched
     })
