@@ -368,7 +368,7 @@ const handleCategoryChange = (event) => {
 
 <Paper sx={{ width: '100%', overflow: 'hidden' }}>
   {viewMode === 'list' ? (
-    <TableContainer sx={{ maxHeight: 440 }}>
+    <TableContainer sx={{ maxHeight: 600 }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
@@ -554,7 +554,7 @@ const handleCategoryChange = (event) => {
   )}
 </Paper>
 
-
+<Box sx={{paddingRight:'20px'}}>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 50, 100]}
                 component="div"
@@ -565,6 +565,7 @@ const handleCategoryChange = (event) => {
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 labelRowsPerPage="Rows per page:"
             />
+            </Box>
   {/* <Button
                 variant="contained"
                 color="primary"
@@ -589,8 +590,8 @@ const handleCategoryChange = (event) => {
                 color="primary"
                 style={{
                     position: 'fixed',
-                    bottom: '20px',
-                    right: '20px',
+                    bottom: '30px',
+                    right: '10px',
                     width: '60px',
                     height: '60px',
                     borderRadius: '50%',

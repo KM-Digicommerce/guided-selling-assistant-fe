@@ -973,7 +973,7 @@ setSnackbarOpen(true);
   
 
     return (
-        <Container>
+        <Container maxWidth={false} sx={{ maxWidth: '100% !important', width: '100%' }}>
 
 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
         <button onClick={handlePrevious} disabled={currentIndex === 0}>
