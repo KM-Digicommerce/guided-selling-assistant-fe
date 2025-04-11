@@ -11,12 +11,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-
-
-
 @media (min-width: 1200px) {
-  .css-9wvnva {
-      width: 100% !important;
-      /* max-width: 1200px; */ /* remove or comment this */
+  .css-5c1adp-MuiContainer-root {
+    max-width: 100% !important;
+    width: 100% !important;
   }
 }

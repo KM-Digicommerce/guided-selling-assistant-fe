@@ -27,7 +27,7 @@ import {
   } from '@mui/material';
   import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-
+import './responsive.css';
   import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
   
 import CloseIcon from '@mui/icons-material/Close';
@@ -291,9 +291,9 @@ const handleCategoryChange = (event) => {
     // }
 
     return (
-        <Container maxWidth="lg">
+        <Container  maxWidth={false} sx={{ maxWidth: '100% !important', width: '100%' }}>
           
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',marginTop:'15px', marginBottom: '20px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',marginTop:'15px', marginBottom: '20px', p: { xs: 1, sm: 2, md: 3 } }}>
   <Typography variant="h4" gutterBottom sx={{fontSize:'21px'}}>
     Products
   </Typography>
