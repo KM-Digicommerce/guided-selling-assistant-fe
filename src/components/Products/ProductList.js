@@ -388,6 +388,7 @@ const handleCategoryChange = (event) => {
   </Box>
 </Box>
 
+{/* <Paper sx={{ width: '100%', overflow: 'hidden' }}></Paper> */}
 <Paper sx={{ width: '100%', overflow: 'hidden' }}>
   {viewMode === 'list' ? (
     <TableContainer   sx={{
