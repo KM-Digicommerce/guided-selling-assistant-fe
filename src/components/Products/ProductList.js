@@ -198,9 +198,9 @@ const handleCategoryChange = (event) => {
         fetchProducts()
     };
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+    // useEffect(() => {
+    //     fetchCategories();
+    // }, []);
 
     useEffect(() => {
         if (selectedCategoryId) {
@@ -212,6 +212,7 @@ const handleCategoryChange = (event) => {
     useEffect(() => {
         fetchProducts();
     }, [searchQuery]);
+
     const fetchProducts = () => {
       setLoading(true);
       const transformedFilters = {
@@ -234,6 +235,7 @@ const handleCategoryChange = (event) => {
               setProducts(productList);
               setFilteredProducts(productList);
               setLoading(false);
+              fetchCategories();
           })
           .catch(error => {
               console.error('Error fetching product data:', error);
@@ -393,100 +395,91 @@ const handleCategoryChange = (event) => {
       overflowY: 'auto',
     }}>
       <Table stickyHeader>
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ textAlign: 'center', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'rgb(224 224 224)' }}>
-              Image
-            </TableCell>
-            <TableCell
-              sx={{ textAlign: 'center', cursor: 'pointer', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'rgb(224 224 224)' }}
-              onClick={() => sortProducts('sku')}
-            >
-              SKU {getSortSymbol('sku')}
-            </TableCell>
-            <TableCell
-              sx={{ textAlign: 'center', cursor: 'pointer', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'rgb(224 224 224)' }}
-              onClick={() => sortProducts('name')}
-            >
-              Title {getSortSymbol('name')}
-            </TableCell>
-            <TableCell
-              sx={{ textAlign: 'center', cursor: 'pointer', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'rgb(224 224 224)' }}
-              onClick={() => sortProducts('mpn')}
-            >
-              MPN {getSortSymbol('mpn')}
-            </TableCell>
-            <TableCell
-              sx={{ textAlign: 'center', cursor: 'pointer', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'rgb(224 224 224)' }}
-              onClick={() => sortProducts('category')}
-            >
-              Category {getSortSymbol('category')}
-            </TableCell>
-            <TableCell
-              sx={{ textAlign: 'center', cursor: 'pointer', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'rgb(224 224 224)' }}
-              onClick={() => sortProducts('brand_name')}
-            >
-              Brand {getSortSymbol('brand_name')}
-            </TableCell>
-            <TableCell
-              sx={{ textAlign: 'center', cursor: 'pointer', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'rgb(224 224 224)' }}
-              onClick={() => sortProducts('price')}
-            >
-              Price {getSortSymbol('price')}
-            </TableCell>
-          </TableRow>
-        </TableHead>
+      <TableHead>
+    <TableRow>
+      {[
+        { label: 'Image' },
+        { label: 'SKU', key: 'sku' },
+        { label: 'Title', key: 'name' },
+        { label: 'MPN', key: 'mpn' },
+        { label: 'Category', key: 'category' },
+        { label: 'Brand', key: 'brand_name' },
+        { label: 'Price', key: 'price' },
+      ].map((col, index) => (
+        <TableCell
+          key={index}
+          sx={{
+            textAlign: 'center',
+            cursor: col.key ? 'pointer' : 'default',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            backgroundColor: 'rgb(224 224 224)',
+            padding: '4px 8px',
+            height: '40px', // Adjust height here
+            fontSize: '14px', // Optional: reduce font size for compact look
+          }}
+          onClick={col.key ? () => sortProducts(col.key) : undefined}
+        >
+          {col.label} {col.key ? getSortSymbol(col.key) : ''}
+        </TableCell>
+      ))}
+    </TableRow>
+  </TableHead>
+  
+
         <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={7} align="center">
-                <DotLoading />
-              </TableCell>
-            </TableRow>
-          ) : filteredProducts.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} align="center">
-                No Data Found
-              </TableCell>
-            </TableRow>
-          ) : (
-            filteredProducts
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell sx={{ textAlign: 'center' }}>
-                    <Link to={`/details/${product.id}?page=${page}`} style={{ textDecoration: 'none' }}>
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          objectFit: 'contain',
-                          borderRadius: '4px',
-                          border: '1px solid #ddd',
-                        }}
-                      />
-                    </Link>
-                  </TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>
-                    <Link to={`/details/${product.id}?page=${page}`} style={{ color: 'black', minWidth: 120, textDecoration: 'none' }}>
-                      {product.sku}
-                    </Link>
-                  </TableCell>
-                  <TableCell sx={{ textAlign: 'center', minWidth: 120, wordBreak: 'break-word' }}>
-                    <Link to={`/details/${product.id}?page=${page}`} style={{ color: 'black', textDecoration: 'none' }}>
-                      {product.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell sx={{ textAlign: 'center', minWidth: 100 }}>{product.mpn}</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>{product.category}</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>{product.brand_name || 'N/A'}</TableCell>
-                  <TableCell sx={{ textAlign: 'center', minWidth: 100 }}>${product.price}</TableCell>
-                </TableRow>
-              ))
-          )}
-        </TableBody>
+  {loading ? (
+    <TableRow>
+      <TableCell colSpan={7} align="center">
+        <DotLoading />
+      </TableCell>
+    </TableRow>
+  ) : filteredProducts.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={7} align="center">
+        No Data Found
+      </TableCell>
+    </TableRow>
+  ) : (
+    filteredProducts
+      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      .map((product) => (
+        <TableRow key={product.id}>
+          <TableCell sx={{ textAlign: 'center' }}>
+            <Link to={`/details/${product.id}?page=${page}`} style={{ textDecoration: 'none' }}>
+              <img
+                src={product.image_url}
+                alt={product.name}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  objectFit: 'contain',
+                  borderRadius: '4px',
+                  border: '1px solid #ddd',
+                }}
+              />
+            </Link>
+          </TableCell>
+          <TableCell sx={{ textAlign: 'center' }}>
+            <Link to={`/details/${product.id}?page=${page}`} style={{ color: 'black', minWidth: 120, textDecoration: 'none' }}>
+              {product.sku}
+            </Link>
+          </TableCell>
+          <TableCell sx={{ textAlign: 'center', maxWidth: 270, wordBreak: 'break-word' }}>
+            <Link to={`/details/${product.id}?page=${page}`} style={{ color: 'black', textDecoration: 'none' }}>
+              {product.name}
+            </Link>
+          </TableCell>
+          <TableCell sx={{ textAlign: 'center', minWidth: 100 }}>{product.mpn}</TableCell>
+          <TableCell sx={{ textAlign: 'center' }}>{product.category}</TableCell>
+          <TableCell sx={{ textAlign: 'center' }}>{product.brand_name || 'N/A'}</TableCell>
+          <TableCell sx={{ textAlign: 'center', minWidth: 100 }}>${product.price}</TableCell>
+        </TableRow>
+      ))
+  )}
+</TableBody>
+
       </Table>
     </TableContainer>
   ) : (
