@@ -150,7 +150,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
-import ReactImageMagnify from 'react-image-magnify'; // This is the missing import
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import soonImg from "../assets/soon-img.png";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -1281,23 +1280,17 @@ const Example = () => {
 
       {/* Main Image with Hover Zoom using react-image-magnify */}
       <Box sx={{ width: isMobile ? '100%' : '400px' }}>
-  <ReactImageMagnify
-    {...{
-      smallImage: {
-        alt: 'Product Image',
-        isFluidWidth: isMobile,
-        src: mainImage || soonImg,
-        width: isMobile ? undefined : 300, // Reduced width (was 400)
-        height: isMobile ? undefined : 225, // Reduced height (was 300) - maintain aspect ratio if desired
-        style: { borderRadius: '4px', objectFit: 'contain', cursor: 'zoom-in' },
-      },
-      largeImage: {
-        src: mainImage || soonImg,
-        width: 1200, // Adjust as needed for zoom quality
-        height: 900, // Adjust as needed for zoom quality
-      },
-      enlargedImageContainerStyle: { zIndex: 10 },
-      shouldHideHint: true,
+
+      
+  <img
+    alt="Product Image"
+    src={mainImage || soonImg}
+    style={{
+      width: isMobile ? '100%' : '300px',
+      height: isMobile ? undefined : '225px',
+      objectFit: 'contain',
+      borderRadius: '4px',
+      cursor: 'zoom-in'
     }}
   />
 </Box>
